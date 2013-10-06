@@ -1,0 +1,28 @@
+{
+  "name": "minimon",
+  "version": "0.1.0",
+  "description": "Low-I/O system monitoring application designed for the Raspberry Pi.",
+  "main": "minimon.js",
+  "scripts": {
+    "test": "mocha -R Spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "empty"
+  },
+  "keywords": [
+    "System",
+    "status",
+    "monitoring",
+    "Raspberry",
+    "Pi",
+    "RounderDB"
+  ],
+  "author": "Anders Weijnitz",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "os-utils": "0.0.14",
+    "rounderdb": "git://github.com/aweijnitz/RounderDB.js.git#master"
+  }
+}
