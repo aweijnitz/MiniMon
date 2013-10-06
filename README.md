@@ -1,4 +1,4 @@
-#MiniMon
+# MiniMon
 A node.js server monitor app for the Rasberry Pi.
 
 # Installation
