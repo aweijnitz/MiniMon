@@ -1,0 +1,248 @@
+<!doctype>
+<head>
+	<link rel="stylesheet" href="lib/css/rickshaw.min.css">
+	<link rel="stylesheet" href="css/minimon.css">
+
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="lib/js/rickshaw.min.js"></script>
+
+</head>
+<body>
+
+<div class="archive">
+	<div class="label">RAM Available (recent)</div>
+	<div class="chart_container">
+		<div class="y_axis" id="chart_freemem_y_axis_0"></div>
+		<div class="chart" id="chart_freemem_0"></div>
+	</div>
+	<div class="label">RAM Available (aggregated)</div>
+	<div class="chart_container">
+		<div class="y_axis" id="chart_freemem_y_axis_1"></div>
+		<div class="chart" id="chart_freemem_1"></div>
+	</div>
+</div>
+
+<div class="archive">
+	<div class="label">LoadAvg 5min (recent)</div>
+	<div class="chart_container">
+		<div class="y_axis" id="chart_loadAvg_y_axis_0"></div>
+		<div class="chart" id="chart_loadAvg_0"></div>
+	</div>
+	<div class="label">LoadAvg 5min (aggregated)</div>
+	<div class="chart_container">
+		<div class="y_axis" id="chart_loadAvg_y_axis_1"></div>
+		<div class="chart" id="chart_loadAvg_1"></div>
+	</div>
+</div>
+
+<div class="archive">
+	<div class="label">CPU Usage (%) (recent)</div>
+	<div class="chart_container">
+		<div class="y_axis" id="chart_cpuUsage_y_axis_0"></div>
+		<div class="chart" id="chart_cpuUsage_0"></div>
+	</div>
+	<div class="label">CPU Usage (%) (aggregated)</div>
+	<div class="chart_container">
+		<div class="y_axis" id="chart_cpuUsage_y_axis_1"></div>
+		<div class="chart" id="chart_cpuUsage_1"></div>
+	</div>
+</div>
+
+<div class="archive">
+	<div class="label">MinMon Process RAM (recent)</div>
+	<div class="chart_container">
+		<div class="y_axis" id="chart_selfMem_y_axis_0"></div>
+		<div class="chart" id="chart_selfMem_0"></div>
+	</div>
+	<div class="label">MinMon Process RAM (aggregated)</div>
+	<div class="chart_container">
+		<div class="y_axis" id="chart_selfMem_y_axis_1"></div>
+		<div class="chart" id="chart_selfMem_1"></div>
+	</div>
+</div>
+
+
+<script>
+
+// Make graph dimension relative to screen size
+//
+var graphWidth = Math.round(0.9 * $(window).width());
+var graphHeight = Math.round(0.35 * graphWidth);
+
+// Data URLs
+//
+//var baseURL = "http://localhost:8080/";
+var baseURL = "";
+var freememURL	= baseURL + "freemem.json";
+var selfMemURL	= baseURL + "selfMem.json";
+var loadAvgURL 		= baseURL + "loadAvg.json";
+var cpuUsageURL 		= baseURL + "cpuUsage.json";
+
+// Declare graphs (will be initiated in AJAX calls below)
+//
+var freeMemGraphs = [];
+var selfMemGraphs = [];
+var loadAvgGraphs = [];
+var cpuUsageGraphs = [];
+
+// Fetch data and create graphs for freemem 
+//
+$.ajax({
+  dataType: "json",
+  url: freememURL,
+  data: "",
+  success: function(data, txtStatus) { 
+		createFreememGraphs(data, txtStatus); 
+	}
+});
+
+$.ajax({
+  dataType: "json",
+  url: selfMemURL,
+  data: "",
+  success: function(data, txtStatus) { 
+		createSelfMemGraphs(data, txtStatus); 
+	}
+});
+
+$.ajax({
+  dataType: "json",
+  url: loadAvgURL,
+  data: "",
+  success: function(data, txtStatus) { 
+		createLoadAvgGraphs(data, txtStatus); 
+	}
+});
+
+
+$.ajax({
+  dataType: "json",
+  url: cpuUsageURL,
+  data: "",
+  success: function(data, txtStatus) { 
+		createCPUUsageGraphs(data, txtStatus); 
+	}
+});
+
+var createCPUUsageGraphs = function(buckets, txtStatus) {
+	console.log("Got buckets: "+buckets.length);
+
+	var gData = null;
+	for(var i = 0; i < buckets.length; i++) {
+		gData = buckets[i];
+		gData.color = 'LightSalmon';
+		cpuUsageGraphs[i] = new Rickshaw.Graph ( {
+			element: document.getElementById("chart_cpuUsage_"+i),
+			width: graphWidth,
+			height: graphHeight,
+			renderer: 'stack',
+			series: [gData]
+		} );
+
+		var detail = new Rickshaw.Graph.HoverDetail({ graph: cpuUsageGraphs[i] });
+		var axes = new Rickshaw.Graph.Axis.Time( { graph: cpuUsageGraphs[i] } );
+		var y_axis = new Rickshaw.Graph.Axis.Y( {
+	      graph: cpuUsageGraphs[i],
+	      orientation: 'left',
+	      tickFormat: function(y){return y+"%";},//Rickshaw.Fixtures.Number.formatKMBT,
+	      element: document.getElementById('chart_cpuUsage_y_axis_'+i),
+			} );
+
+		cpuUsageGraphs[i].render();
+	} // end for
+};
+
+
+var createLoadAvgGraphs = function(buckets, txtStatus) {
+	console.log("Got buckets: "+buckets.length);
+
+	var gData = null;
+	for(var i = 0; i < buckets.length; i++) {
+		gData = buckets[i];
+		gData.color = 'DarkSeaGreen';
+		loadAvgGraphs[i] = new Rickshaw.Graph ( {
+			element: document.getElementById("chart_loadAvg_"+i),
+			width: graphWidth,
+			height: graphHeight,
+			renderer: 'stack',
+			series: [gData]
+		} );
+
+		var detail = new Rickshaw.Graph.HoverDetail({ graph: loadAvgGraphs[i] });
+		var axes = new Rickshaw.Graph.Axis.Time( { graph: loadAvgGraphs[i] } );
+		var y_axis = new Rickshaw.Graph.Axis.Y( {
+	      graph: loadAvgGraphs[i],
+	      orientation: 'left',
+	      tickFormat: function(y){return y;},//Rickshaw.Fixtures.Number.formatKMBT,
+	      element: document.getElementById('chart_loadAvg_y_axis_'+i),
+			} );
+
+		loadAvgGraphs[i].render();
+	} // end for
+};
+
+
+var createSelfMemGraphs = function(buckets, txtStatus) {
+	console.log("Got buckets: "+buckets.length);
+
+	var gData = null;
+	for(var i = 0; i < buckets.length; i++) {
+		gData = buckets[i];
+		gData.color = 'Thistle';
+		selfMemGraphs[i] = new Rickshaw.Graph ( {
+			element: document.getElementById("chart_selfMem_"+i),
+			width: graphWidth,
+			height: graphHeight,
+			renderer: 'stack',
+			series: [gData]
+		} );
+
+		var detail = new Rickshaw.Graph.HoverDetail({ graph: selfMemGraphs[i] });
+		var axes = new Rickshaw.Graph.Axis.Time( { graph: selfMemGraphs[i] } );
+		var y_axis = new Rickshaw.Graph.Axis.Y( {
+	      graph: selfMemGraphs[i],
+	      orientation: 'left',
+	      tickFormat: function(y){return y+"M";},//Rickshaw.Fixtures.Number.formatKMBT,
+	      element: document.getElementById('chart_selfMem_y_axis_'+i),
+			} );
+
+		selfMemGraphs[i].render();
+	} // end for
+};
+
+
+var createFreememGraphs = function(buckets, txtStatus) {
+	console.log("Got buckets: "+buckets.length);
+
+	var gData = null;
+	for(var i = 0; i < buckets.length; i++) {
+		gData = buckets[i];
+		gData.color = 'steelblue';
+		freeMemGraphs[i] = new Rickshaw.Graph ( {
+			element: document.getElementById("chart_freemem_"+i),
+			width: graphWidth,
+			height: graphHeight,
+			renderer: 'stack',
+			series: [gData]
+		} );
+
+		var detail = new Rickshaw.Graph.HoverDetail({ graph: freeMemGraphs[i] });
+		var axes = new Rickshaw.Graph.Axis.Time( { graph: freeMemGraphs[i] } );
+		var y_axis = new Rickshaw.Graph.Axis.Y( {
+	      graph: freeMemGraphs[i],
+	      orientation: 'left',
+	      tickFormat: function(y){return y+"M"},//Rickshaw.Fixtures.Number.formatKMBT,
+	      element: document.getElementById('chart_freemem_y_axis_'+i),
+			} );
+
+		freeMemGraphs[i].render();
+	} // end for
+};
+
+
+
+
+</script>
+
+</body>

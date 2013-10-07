@@ -1,0 +1,38 @@
+.archive {
+    position: relative;
+    font-family: Arial, Helvetica, sans-serif;
+    padding-top: 1.0rem;
+}
+
+.label {
+  position: relative;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.chart_container {
+        position: relative;
+        font-family: Arial, Helvetica, sans-serif;
+        width: 95%;
+
+        border-style: dotted;
+        border-width: 0.1rem;
+        border-color: #eeeeff;
+        padding-bottom: 0.5rem;
+
+}
+
+.chart {
+        position: relative;
+
+        top: 0.2rem;
+        left: 3.0rem;
+        padding-bottom: 1.4rem;
+}
+
+.y_axis {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 3.0rem;
+}
