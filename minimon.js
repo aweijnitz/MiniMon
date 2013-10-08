@@ -1,60 +1,17 @@
-var os = require('os-utils');
-var RounderDB = require('rounderdb');
 var http = require('http');
 var util = require('util');
 var fs = require('fs');
-
+var os = require('os-utils');
+var RounderDB = require('rounderdb');
 var selfMon = require('./lib/monitorSelf.js');
 var router = require('./lib/router.js');
 
-var config = require('./conf/default.conf');
-var DBconf = {
-    "persistenceConf": {
-        "dbFile": "./db/rounderDB.json",
-        "syncInterval": 5
-    },
-    "cpuUsage": [
-        {
-            "capacity": 60,
-            "aggregationStrategy": "average"
-        },
-        {
-            "capacity": 600,
-            "aggregationStrategy": "average"
-        }
-    ],
-    "loadAvg": [
-        {
-            "capacity": 60,
-            "aggregationStrategy": "average"
-        },
-        {
-            "capacity": 600,
-            "aggregationStrategy": "average"
-        }
-    ],
-    "selfMem": [
-        {
-            "capacity": 60,
-            "aggregationStrategy": "average"
-        },
-        {
-            "capacity": 600,
-            "aggregationStrategy": "average"
-        }
-    ],
-    "freemem": [
-        {
-            "capacity": 60,
-            "aggregationStrategy": "average"
-        },
-        {
-            "capacity": 600
-        }
-    ]
-};
+var conf = require('./conf/default.conf.js');
+var DBconf = conf.DBconf;
+var sampleInterval = conf.sampleInterval;
 
-var port = 8000;
+var doLogging = false;
+var dryrun = false; // if true, don't add anything to db (just print, if doLogging is enabled)
 var db = null;
 
 if (fs.existsSync(DBconf.persistenceConf.dbFile)) {
@@ -65,13 +22,6 @@ if (fs.existsSync(DBconf.persistenceConf.dbFile)) {
 } else
     db = RounderDB.createInstance(DBconf);
 
-// Enable logging
-var doLogging = false;
-var dryrun = false; // if true, don't add anything to db (just print, if doLogging is enabled)
-
-var intervalCPU = 1000;
-var intervalLoadAvg = 1 * 60 * 1000;
-var intervalMem = 1500;
 
 var addToDB = function (key, value) {
     if (!dryrun)
@@ -86,8 +36,8 @@ var cpuMon = function () {
 };
 
 var memMon = function () {
-    var freeMem = os.freememPercentage();
-    log('Free mem (%): ' + freeMem);
+    var freeMem = os.freemem();
+    log('Free mem (MB): ' + freeMem);
     addToDB('freemem', freeMem);
 };
 
@@ -104,12 +54,13 @@ var loadAvg = function () {
     addToDB('loadAvg', load);
 };
 
+
 // Register data collectors
 //
-var cpuHandle = setInterval(cpuMon, intervalCPU);
-var cpuLoad = setInterval(loadAvg, intervalLoadAvg);
-var memHandle = setInterval(memMon, intervalMem);
-var selfMemHandle = setInterval(selfMem, intervalMem);
+var cpuHandle = setInterval(cpuMon, sampleInterval.cpuUsage);
+var cpuLoad = setInterval(loadAvg, sampleInterval.loadAvg);
+var memHandle = setInterval(memMon, sampleInterval.mem);
+var selfMemHandle = setInterval(selfMem, sampleInterval.mem);
 
 
 // Configure our HTTP server to respond with Hello World to all requests.
@@ -122,9 +73,11 @@ var server = http.createServer(function (request, response) {
 });
 
 // Listen on port 8000, IP defaults to 127.0.0.1
-server.listen(port);
+server.listen(conf.port);
 
-console.log("Server running at http://127.0.0.1:8000/");
+console.log("Server running at http://127.0.0.1:"+conf.port);
+
+
 
 
 var log = function (msg) {
