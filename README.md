@@ -13,3 +13,7 @@ For now: copy minimon.js and roll your own
 
 # Known issues
 
+### Browser compatibility
+This package relies heavily on [rickshaw.js](https://github.com/shutterstock/rickshaw) for all graph rendering. Rickshaw works in modern browsers and with IE9.
+
+

@@ -62,6 +62,27 @@ var cpuLoad = setInterval(loadAvg, sampleInterval.loadAvg);
 var memHandle = setInterval(memMon, sampleInterval.mem);
 var selfMemHandle = setInterval(selfMem, sampleInterval.mem);
 
+var shutdownHook = function(err) {
+    var exitCode = 0;
+    if(err) {
+        console.err("ERROR. Couldn't save DB before shutting down. Cause: "+err);
+        exitCode = 1;
+    }
+    process.exit(exitCode);
+  };
+
+// Configure graceful exits on SIGINT and SIGTERM
+// 
+process.on('SIGINT', function() {
+  console.log('Got SIGINT.  Saving DB and shutting down');
+  RounderDB.saveInstance(db, shutdownHook);
+});
+
+process.on('SIGTERM', function() {
+  console.log('Got SIGTERM.  Saving DB and shutting down');
+  RounderDB.saveInstance(db, shutdownHook);
+});
+
 
 // Configure our HTTP server to respond with Hello World to all requests.
 var server = http.createServer(function (request, response) {
